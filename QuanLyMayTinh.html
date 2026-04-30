@@ -87,7 +87,7 @@
                     <div class="p-2 bg-blue-600 rounded-xl">
                         <i data-lucide="monitor-speaker" class="w-6 h-6 text-white"></i>
                     </div>
-                    <span class="font-black text-xl tracking-tighter uppercase">NSG ASSET</span>
+                    <span class="font-black text-xl tracking-tighter uppercase text-white">NSG ASSET</span>
                 </div>
                 <p class="text-[10px] text-slate-500 font-bold tracking-[0.2em]">CLOUD MANAGEMENT</p>
             </div>
@@ -114,7 +114,7 @@
                     </div>
                     <button onclick="logout()" class="flex items-center space-x-3 p-3 w-full rounded-xl hover:bg-red-900/30 text-red-400 transition-colors">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
-                        <span class="font-medium text-sm">Đăng xuất</span>
+                        <span class="font-medium text-sm text-red-400">Đăng xuất</span>
                     </button>
                 </div>
                 <button id="login-trigger-btn" onclick="openLoginModal()" class="flex items-center justify-center space-x-3 p-3 w-full rounded-xl bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-all">
@@ -143,7 +143,7 @@
             </header>
 
             <div id="app-content" class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <!-- Dashboard -->
+                <!-- Dashboard View -->
                 <section id="section-dashboard" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
@@ -219,7 +219,7 @@
                     <div id="maintenance-empty" class="hidden bg-white p-20 rounded-3xl border border-dashed border-slate-200 text-center">
                         <i data-lucide="check-circle" class="w-16 h-16 text-green-100 mx-auto mb-4"></i>
                         <h2 class="text-2xl font-bold text-slate-800 uppercase tracking-tighter">Hệ thống ổn định</h2>
-                        <p class="text-slate-400 mt-1">Hiện không có thiết bị nào trong danh sách sửa chữa.</p>
+                        <p class="text-slate-400 mt-1">Hiện không có thiết bị nào đang trong quá trình sửa chữa.</p>
                     </div>
                 </section>
             </div>
@@ -234,7 +234,7 @@
                 <h3 id="modal-title" class="text-xl font-black text-slate-800 flex items-center tracking-tight uppercase">
                     <i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Chi tiết tài sản
                 </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:bg-white p-2.5 rounded-full transition-all">
+                <button onclick="closeModal()" class="text-slate-400 hover:bg-white p-2.5 rounded-full">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -243,7 +243,7 @@
                 <form id="asset-form" class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
                     <input type="hidden" id="edit-id" value="">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <!-- Cấu hình chính -->
+                        <!-- Col 1: Main config -->
                         <div class="space-y-6">
                             <h4 class="text-xs font-black text-blue-600 border-b-2 border-blue-500 pb-2 inline-block tracking-widest uppercase">Cấu hình hệ thống</h4>
                             <div class="grid grid-cols-2 gap-4">
@@ -271,7 +271,7 @@
                             </div>
                         </div>
 
-                        <!-- Màn hình & Ngoại vi (Dynamic) -->
+                        <!-- Col 2: Peripherals -->
                         <div class="space-y-6">
                             <h4 class="text-xs font-black text-purple-600 border-b-2 border-purple-500 pb-2 inline-block tracking-widest uppercase">Màn hình & Ngoại vi</h4>
                             
@@ -279,7 +279,7 @@
                                 <label class="text-[10px] font-black text-purple-500 uppercase flex items-center tracking-widest"><i data-lucide="monitor" class="w-4 h-4 mr-2"></i> Màn hình</label>
                                 <input type="text" id="monitor-brand" placeholder="Hãng & Model" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium outline-none">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" id="monitor-size" placeholder="Kích thước" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs outline-none">
+                                    <input type="text" id="monitor-size" placeholder="Kích thước (inch)" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs outline-none">
                                     <input type="text" id="monitor-res" placeholder="Độ phân giải" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs outline-none">
                                 </div>
                             </div>
@@ -289,13 +289,11 @@
                                     <label class="text-[10px] font-black text-green-600 uppercase flex items-center tracking-widest"><i data-lucide="mouse-pointer" class="w-4 h-4 mr-2"></i> Thiết bị ngoại vi</label>
                                     <button type="button" onclick="addPeripheralRow()" class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 uppercase tracking-widest transition-all">+ Thêm thiết bị</button>
                                 </div>
-                                <div id="peripherals-container" class="space-y-2">
-                                    <!-- Dynamic rows -->
-                                </div>
+                                <div id="peripherals-container" class="space-y-2"></div>
                             </div>
                         </div>
 
-                        <!-- Nhật ký -->
+                        <!-- Col 3: Logs -->
                         <div class="bg-slate-50 rounded-[24px] p-6 border border-slate-100 flex flex-col h-full shadow-inner">
                             <h4 class="text-xs font-black text-orange-600 border-b-2 border-orange-400 pb-2 inline-block tracking-widest uppercase mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Lịch sử bảo trì</h4>
                             <div class="mb-4 space-y-2">
@@ -334,14 +332,14 @@
                     </div>
                     <div class="space-y-6">
                         <div class="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h5 class="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] flex items-center border-b border-slate-50 pb-4"><i data-lucide="layers" class="w-4 h-4 mr-2"></i> Cấu hình hiện tại</h5>
+                            <h5 class="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] flex items-center border-b border-slate-50 pb-4"><i data-lucide="layers" class="w-4 h-4 mr-2"></i> Cấu hình thiết bị</h5>
                             <div id="qr-detail-content" class="text-sm text-slate-700 space-y-4 font-semibold"></div>
                         </div>
                     </div>
                     <div class="space-y-6">
                         <div class="bg-orange-50 rounded-[32px] p-8 border border-orange-100 min-h-[300px]">
                             <h6 class="text-[11px] font-black text-orange-600 uppercase mb-5 flex items-center tracking-[0.2em]"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Lịch sử sửa chữa</h6>
-                            <div id="qr-maintenance-history-list" class="space-y-4"></div>
+                            <div id="qr-maintenance-history-list" class="space-y-4 pr-2 custom-scrollbar overflow-y-auto max-h-[400px]"></div>
                         </div>
                     </div>
                 </div>
@@ -349,10 +347,10 @@
         </div>
     </div>
 
-    <!-- LOADING -->
+    <!-- LOADING OVERLAY -->
     <div id="app-loading" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
         <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-slate-400 text-sm font-bold uppercase tracking-widest animate-pulse">Kết nối cơ sở dữ liệu Cloud...</p>
+        <p class="text-slate-400 text-sm font-bold uppercase tracking-widest animate-pulse">Đang đồng bộ Cloud...</p>
     </div>
 
     <script type="module">
@@ -399,23 +397,22 @@
                     if(currentSection === 'maintenance') renderMaintenanceList();
                     const loader = document.getElementById('app-loading');
                     if(loader) loader.classList.add('opacity-0', 'pointer-events-none');
+                }, (error) => {
+                    console.error("Firestore Error:", error);
                 });
-            } catch (err) { console.error("Firebase Error:", err); }
+            } catch (err) { console.error("Firebase Auth Error:", err); }
         };
 
         window.addEventListener('DOMContentLoaded', () => { init(); refreshIcons(); });
 
-        // --- UI & AUTH ---
-        window.openLoginModal = () => { document.getElementById('login-modal').classList.remove('hidden'); };
-        window.closeLoginModal = () => { document.getElementById('login-modal').classList.add('hidden'); };
+        // --- AUTH ---
+        window.openLoginModal = () => document.getElementById('login-modal').classList.remove('hidden');
+        window.closeLoginModal = () => document.getElementById('login-modal').classList.add('hidden');
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            const errorMsg = document.getElementById('login-error');
-            const btn = document.getElementById('login-btn');
-
             if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
                 isLoggedIn = true;
                 document.getElementById('login-modal').classList.add('hidden');
@@ -423,12 +420,12 @@
                 document.getElementById('user-info-panel').classList.remove('hidden');
                 document.getElementById('admin-add-btn').classList.remove('hidden');
                 document.getElementById('role-label').textContent = "ADMIN MODE";
-                document.getElementById('role-label').className = "text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter shadow-sm";
-                renderAssets(); renderDashboard();
+                document.getElementById('role-label').className = "text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter shadow-sm border border-blue-100";
+                renderAssets();
             } else {
-                if(errorMsg) errorMsg.classList.remove('hidden');
-                btn.classList.add('animate-shake', 'bg-red-600');
-                setTimeout(() => btn.classList.remove('animate-shake', 'bg-red-600'), 500);
+                const err = document.getElementById('login-error');
+                err.classList.remove('hidden');
+                setTimeout(() => err.classList.add('hidden'), 2000);
             }
         });
 
@@ -449,14 +446,19 @@
             if (action === 'printAllQRs') printAllQRs();
         };
 
+        // --- UTILS ---
         function refreshIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
-        window.generateRandomCode = () => { const f = document.getElementById('asset-code'); if(f) f.value = 'IT-' + Math.random().toString(36).substr(2, 6).toUpperCase(); };
+        window.generateRandomCode = () => { document.getElementById('asset-code').value = 'IT-' + Math.random().toString(36).substr(2, 6).toUpperCase(); };
 
         window.showSection = (sectionId) => {
-            document.getElementById(`section-${currentSection}`).classList.add('hidden');
+            const currentEl = document.getElementById(`section-${currentSection}`);
+            const nextEl = document.getElementById(`section-${sectionId}`);
+            if(currentEl) currentEl.classList.add('hidden');
+            if(nextEl) nextEl.classList.remove('hidden');
+            
             document.getElementById(`nav-${currentSection}`).classList.remove('sidebar-active');
-            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
             document.getElementById(`nav-${sectionId}`).classList.add('sidebar-active');
+            
             currentSection = sectionId;
             const titles = { 'dashboard': 'Dashboard', 'assets': 'Danh sách tài sản', 'maintenance': 'Quản lý bảo trì' };
             document.getElementById('page-title').textContent = titles[sectionId];
@@ -464,12 +466,12 @@
             refreshIcons();
         };
 
-        // --- DYNAMIC PERIPHERALS LOGIC ---
-        window.addPeripheralRow = (type = "", model = "") => {
+        // --- PERIPHERALS ---
+        window.addPeripheralRow = (type = "Chuột", model = "") => {
             const container = document.getElementById('peripherals-container');
             const rowId = 'peri-' + Date.now() + Math.random().toString(36).substr(2, 4);
             const div = document.createElement('div');
-            div.className = "flex space-x-2 group peri-row animate-in fade-in slide-in-from-left-2 duration-300";
+            div.className = "flex space-x-2 peri-row animate-in fade-in duration-300";
             div.id = rowId;
             div.innerHTML = `
                 <select class="w-1/3 px-3 py-2 border border-slate-200 rounded-xl text-[10px] font-bold outline-none peri-type">
@@ -482,14 +484,14 @@
                     <option value="Tai nghe" ${type === "Tai nghe" ? "selected" : ""}>Tai nghe</option>
                     <option value="Khác" ${type === "Khác" ? "selected" : ""}>Khác</option>
                 </select>
-                <input type="text" value="${model}" placeholder="Model/Thương hiệu" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-medium outline-none peri-model">
+                <input type="text" value="${model}" placeholder="Model thiết bị" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none peri-model">
                 <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-2 text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             `;
             container.appendChild(div);
             refreshIcons();
         };
 
-        // --- CRUD ---
+        // --- CRUD ACTIONS ---
         window.openModal = (id = "") => {
             if (!isLoggedIn) { openLoginModal(); return; }
             const form = document.getElementById('asset-form');
@@ -499,12 +501,12 @@
             
             if (id) {
                 const a = assets.find(x => x.id === id);
-                document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Chỉnh sửa: ${a.code}`;
+                document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Sửa: ${a.code}`;
                 document.getElementById('edit-id').value = id;
                 document.getElementById('asset-code').value = a.code || '';
                 document.getElementById('asset-user').value = a.user || '';
-                document.getElementById('asset-dept').value = a.dept || '';
-                document.getElementById('asset-location').value = a.location || '';
+                document.getElementById('asset-dept').value = a.dept || 'Phòng QTTB&CSVC';
+                document.getElementById('asset-location').value = a.location || 'Khu A';
                 document.getElementById('asset-status').value = a.status || 'Tốt';
                 document.getElementById('conf-cpu').value = a.cpu || '';
                 document.getElementById('conf-ram').value = a.ram || '';
@@ -518,11 +520,11 @@
                 }
                 renderMaintenanceHistory(id);
             } else {
-                document.getElementById('modal-title').innerHTML = '<i data-lucide="plus-circle" class="w-6 h-6 mr-3 text-blue-600"></i> Thêm Tài Sản Mới';
+                document.getElementById('modal-title').innerHTML = '<i data-lucide="plus" class="w-6 h-6 mr-3 text-blue-600"></i> Thêm máy tính';
                 document.getElementById('edit-id').value = "";
                 generateRandomCode();
                 addPeripheralRow("Chuột", ""); addPeripheralRow("Bàn phím", "");
-                document.getElementById('maintenance-history-list').innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4 uppercase font-bold tracking-widest">Máy mới - chưa có lịch sử</p>';
+                document.getElementById('maintenance-history-list').innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4 uppercase font-bold tracking-widest">Thiết bị mới</p>';
             }
             refreshIcons();
         };
@@ -532,15 +534,13 @@
         document.getElementById('asset-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('edit-id').value;
-            
-            // Collect dynamic peripherals
             const periRows = document.querySelectorAll('.peri-row');
             const peripherals = Array.from(periRows).map(row => ({
                 type: row.querySelector('.peri-type').value,
                 model: row.querySelector('.peri-model').value
             })).filter(p => p.model.trim() !== "");
 
-            const assetData = {
+            const data = {
                 code: document.getElementById('asset-code').value,
                 user: document.getElementById('asset-user').value,
                 dept: document.getElementById('asset-dept').value,
@@ -556,19 +556,15 @@
                 updatedAt: new Date().toISOString()
             };
 
-            if (editId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', editId), assetData);
-            else { 
-                assetData.maintenanceLogs = []; 
-                assetData.createdAt = new Date().toISOString(); 
-                await addDoc(assetsCollection, assetData); 
-            }
+            if (editId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', editId), data);
+            else { data.maintenanceLogs = []; data.createdAt = new Date().toISOString(); await addDoc(assetsCollection, data); }
             closeModal();
         });
 
         window.deleteAsset = async (id) => {
-            if (!isLoggedIn) { openLoginModal(); return; }
+            if (!isLoggedIn) return;
             const a = assets.find(x => x.id === id);
-            if (a && confirm(`Xác nhận xóa tài sản ${a.code}?`)) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id));
+            if (a && confirm(`Xóa vĩnh viễn tài sản ${a.code}?`)) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id));
         };
 
         // --- MAINTENANCE ---
@@ -588,20 +584,20 @@
             const list = document.getElementById('maintenance-history-list');
             const a = assets.find(x => x.id === id);
             const logs = a ? (a.maintenanceLogs || []) : [];
-            list.innerHTML = logs.length === 0 ? '<p class="text-[10px] text-slate-400 italic text-center py-4">Trống</p>' : logs.map(log => `<div class="bg-white p-3 rounded-2xl border shadow-sm border-l-4 border-l-orange-400 mb-2"><div class="text-[9px] font-black text-blue-500 mb-1">${log.date}</div><p class="text-[11px] text-slate-700 leading-relaxed font-semibold">${log.content}</p></div>`).join('');
+            list.innerHTML = logs.length === 0 ? '<p class="text-[10px] text-slate-400 italic text-center py-4">Chưa có lịch sử.</p>' : logs.map(log => `<div class="bg-white p-3 rounded-2xl border shadow-sm border-l-4 border-l-orange-400 mb-2 animate-in slide-in-from-right-2 duration-300"><div class="text-[9px] font-black text-blue-500 mb-1">${log.date}</div><p class="text-[11px] text-slate-700 leading-relaxed font-semibold">${log.content}</p></div>`).join('');
         }
 
         window.completeMaintenance = async (id) => {
             const a = assets.find(x => x.id === id);
             const logs = a.maintenanceLogs || [];
-            logs.unshift({ date: new Date().toLocaleString('vi-VN'), content: "--- Bảo trì xong, thiết bị hoạt động tốt ---" });
+            logs.unshift({ date: new Date().toLocaleString('vi-VN'), content: "--- Bảo trì hoàn tất, thiết bị hoạt động tốt ---" });
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id), { maintenanceLogs: logs, status: 'Tốt' });
         };
 
         // --- QR & RENDERERS ---
         function getFullConfigText(a) {
-            let pText = (a.peripherals || []).map(p => `${p.type}:${p.model}`).join(', ');
-            return `TÀI SẢN NSG\nMã: ${a.code}\nUser: ${a.user}\nCấu hình: ${a.cpu}/${a.ram}/${a.storage}\nMàn hình: ${a.monitorBrand} (${a.monitorSize}")\nNgoại vi: ${pText || 'N/A'}\nTrạng thái: ${a.status}`;
+            let pText = (a.peripherals || []).map(p => `${p.type}: ${p.model}`).join(', ');
+            return `NSG ASSET INFO\nMã: ${a.code}\nUser: ${a.user}\nCPU: ${a.cpu}\nRAM: ${a.ram}\nHDD/SSD: ${a.storage}\nMonitor: ${a.monitorBrand} (${a.monitorSize}")\nPeri: ${pText || 'None'}\nStatus: ${a.status}`;
         }
 
         window.showQr = (id) => {
@@ -609,37 +605,30 @@
             document.getElementById('qrcode-container').innerHTML = "";
             document.getElementById('qr-code-text').textContent = a.code;
             
-            const pListHtml = (a.peripherals || []).map(p => `
-                <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5">
-                    <span class="text-slate-400 uppercase tracking-widest text-[9px]">${p.type}:</span>
-                    <span class="text-slate-800 text-right">${p.model}</span>
-                </div>
-            `).join('');
+            const pListHtml = (a.peripherals || []).map(p => `<div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-bold">${p.type}:</span><span class="text-slate-800 text-right">${p.model}</span></div>`).join('');
 
-            const det = document.getElementById('qr-detail-content');
-            det.innerHTML = `
-                <div class="bg-blue-50/50 p-4 rounded-2xl mb-2">
-                    <div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-400 uppercase font-black">Chủ sở hữu:</span><span class="text-blue-600 font-bold">${a.user}</span></div>
+            document.getElementById('qr-detail-content').innerHTML = `
+                <div class="bg-blue-50/50 p-4 rounded-2xl mb-4 border border-blue-100/50">
+                    <div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-400 uppercase font-black">Người sử dụng:</span><span class="text-blue-600 font-bold">${a.user}</span></div>
                     <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 uppercase font-bold">Vị trí:</span><span class="text-slate-700 text-xs font-bold">${a.location} - ${a.dept}</span></div>
                 </div>
                 <div class="space-y-2 px-1">
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase tracking-widest text-[9px]">CPU:</span><span class="text-slate-800 font-bold text-right">${a.cpu}</span></div>
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase tracking-widest text-[9px]">Bộ nhớ:</span><span class="text-slate-800 text-right">${a.ram} / ${a.storage}</span></div>
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase tracking-widest text-[9px]">Màn hình:</span><span class="text-slate-800 text-right">${a.monitorBrand ? a.monitorBrand + ' (' + a.monitorSize + '")' : 'N/A'}</span></div>
+                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">CPU:</span><span class="text-slate-800 font-bold text-right">${a.cpu}</span></div>
+                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">Bộ nhớ:</span><span class="text-slate-800 text-right">${a.ram} / ${a.storage}</span></div>
+                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">Màn hình:</span><span class="text-slate-800 text-right">${a.monitorBrand ? a.monitorBrand + ' (' + a.monitorSize + '")' : 'N/A'}</span></div>
                     <div class="pt-2">
-                        <label class="text-[8px] font-black text-green-500 uppercase tracking-widest block mb-2">Thiết bị ngoại vi đi kèm:</label>
-                        ${pListHtml || '<div class="text-[10px] text-slate-300 italic">Không có thiết bị ngoại vi</div>'}
+                        <label class="text-[9px] font-black text-green-500 uppercase tracking-widest block mb-2 border-l-2 border-green-500 pl-2">Thiết bị ngoại vi:</label>
+                        ${pListHtml || '<div class="text-[10px] text-slate-300 italic">Không có thiết bị đi kèm</div>'}
                     </div>
-                    <div class="flex justify-between items-center p-3 mt-4 bg-blue-600 rounded-xl shadow-lg"><span class="text-[10px] font-black text-white uppercase tracking-widest">Trạng thái hiện tại:</span><span class="font-bold text-white text-xs uppercase">${a.status}</span></div>
+                    <div class="flex justify-between items-center p-3 mt-4 bg-blue-600 rounded-xl shadow-lg text-white uppercase text-[10px] font-black tracking-widest"><span>Trạng thái:</span><span>${a.status}</span></div>
                 </div>
             `;
             
-            const hist = document.getElementById('qr-maintenance-history-list');
             const logs = a.maintenanceLogs || [];
-            hist.innerHTML = logs.length > 0 ? logs.map(l => `<div class="bg-white p-4 rounded-3xl border border-orange-200 mb-2 border-l-4 border-l-orange-400 shadow-sm"><div class="text-[9px] font-black text-blue-500 mb-1 flex justify-between"><span>${l.date}</span><i data-lucide="wrench" class="w-3 h-3"></i></div><p class="text-[11px] text-slate-800 font-bold italic leading-relaxed">"${l.content}"</p></div>`).join('') : `<div class="text-xs text-orange-800 italic p-10 text-center border-4 border-dotted border-orange-200 rounded-[40px]">Chưa ghi nhận bảo trì.</div>`;
+            document.getElementById('qr-maintenance-history-list').innerHTML = logs.length > 0 ? logs.map(l => `<div class="bg-white p-4 rounded-2xl border border-orange-100 mb-2 border-l-4 border-l-orange-400 shadow-sm"><div class="text-[9px] font-black text-blue-500 mb-1">${l.date}</div><p class="text-[11px] text-slate-800 font-bold italic leading-relaxed">"${l.content}"</p></div>`).join('') : `<div class="text-xs text-orange-800 italic p-10 text-center border-4 border-dotted border-orange-100 rounded-[40px]">Chưa ghi nhận bảo trì.</div>`;
             
             document.getElementById('qr-modal').classList.remove('hidden');
-            new QRCode(document.getElementById('qrcode-container'), { text: getFullConfigText(a), width: 200, height: 200, colorDark: "#0f172a", correctLevel: QRCode.CorrectLevel.M });
+            new QRCode(document.getElementById('qrcode-container'), { text: getFullConfigText(a), width: 220, height: 220, colorDark: "#0f172a", correctLevel: QRCode.CorrectLevel.M });
             refreshIcons();
         };
 
@@ -651,17 +640,17 @@
             const filtered = assets.filter(a => (a.code || "").toLowerCase().includes(search) || (a.user || "").toLowerCase().includes(search));
             tbody.innerHTML = filtered.map((a, i) => {
                 const colors = { 'Tốt': 'bg-green-50 text-green-600 border-green-100', 'Đang sửa': 'bg-orange-50 text-orange-600 border-orange-100', 'Hỏng': 'bg-red-50 text-red-600 border-red-100', 'Thanh lý': 'bg-slate-50 text-slate-400' }[a.status] || 'bg-slate-50 text-slate-400';
-                return `<tr class="hover:bg-slate-50 transition-all border-b border-slate-50 group">
+                return `<tr class="hover:bg-slate-50 transition-all border-b border-slate-50">
                     <td class="px-6 py-5 text-xs text-slate-400 font-bold">${i+1}</td>
-                    <td class="px-6 py-5"><span class="font-mono font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl text-sm border border-blue-100 shadow-sm">${a.code}</span></td>
-                    <td class="px-6 py-5"><div class="font-bold text-slate-800 text-sm tracking-tight">${a.user}</div><div class="text-[10px] font-black text-slate-300 uppercase tracking-tighter">${a.dept}</div></td>
-                    <td class="px-6 py-5 text-center"><span class="text-[9px] font-black uppercase px-3 py-1 rounded-full border ${colors} shadow-sm">${a.status}</span></td>
+                    <td class="px-6 py-5"><span class="font-mono font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl text-sm border border-blue-100">${a.code}</span></td>
+                    <td class="px-6 py-5"><div class="font-bold text-slate-800 text-sm">${a.user}</div><div class="text-[10px] font-black text-slate-300 uppercase">${a.dept}</div></td>
+                    <td class="px-6 py-5 text-center"><span class="text-[9px] font-black uppercase px-3 py-1 rounded-full border ${colors}">${a.status}</span></td>
                     <td class="px-6 py-5 bg-blue-50/20 border-l border-blue-50 text-center">
                         <div class="flex items-center justify-center space-x-2">
-                            <button onclick="showQr('${a.id}')" class="bg-white p-3 rounded-2xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-90" title="Xem chi tiết"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            <button onclick="showQr('${a.id}')" class="bg-white p-3 rounded-2xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="eye" class="w-4 h-4"></i></button>
                             ${isLoggedIn ? `
-                                <button onclick="openModal('${a.id}')" class="bg-white p-3 rounded-2xl border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90" title="Sửa"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteAsset('${a.id}')" class="bg-white p-3 rounded-2xl border border-red-100 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-90" title="Xóa"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <button onclick="openModal('${a.id}')" class="bg-white p-3 rounded-2xl border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deleteAsset('${a.id}')" class="bg-white p-3 rounded-2xl border border-red-100 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             ` : ''}
                         </div>
                     </td>
@@ -674,36 +663,40 @@
             const list = document.getElementById('maintenance-list');
             const empty = document.getElementById('maintenance-empty');
             const repair = assets.filter(a => a.status === 'Đang sửa');
-            if (repair.length === 0) { empty.classList.remove('hidden'); list.innerHTML = ""; return; }
-            empty.classList.add('hidden');
-            list.innerHTML = repair.map(a => `<div class="bg-white rounded-[32px] shadow-sm border border-orange-100 overflow-hidden flex flex-col transition-all hover:shadow-xl"><div class="p-6 border-b border-orange-50 bg-orange-50/30"><span class="text-[10px] font-black text-orange-600 bg-white px-3 py-1 rounded-lg border border-orange-200">${a.code}</span><h4 class="font-black text-slate-800 mt-3 text-lg">${a.user}</h4><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><div class="p-6 flex-1 bg-slate-50/30"><div class="flex items-start space-x-2"><i data-lucide="alert-circle" class="w-4 h-4 text-orange-400 mt-0.5"></i><p class="text-xs text-slate-700 font-semibold italic">"${a.maintenanceLogs && a.maintenanceLogs.length > 0 ? a.maintenanceLogs[0].content : "Chờ xử lý kỹ thuật..."}"</p></div></div><div class="p-4 bg-slate-50 grid grid-cols-2 gap-3"><button onclick="openModal('${a.id}')" class="bg-white border-2 border-slate-100 py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-slate-600 transition-all">Sổ nhật ký</button><button onclick="completeMaintenance('${a.id}')" class="bg-orange-500 text-white py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-100 active:scale-95 transition-all">Hoàn thành</button></div></div>`).join('');
+            if (repair.length === 0) { if(empty) empty.classList.remove('hidden'); if(list) list.innerHTML = ""; return; }
+            if(empty) empty.classList.add('hidden');
+            if(list) list.innerHTML = repair.map(a => `<div class="bg-white rounded-[32px] shadow-sm border border-orange-100 overflow-hidden flex flex-col transition-all hover:shadow-xl animate-in zoom-in-95 duration-500"><div class="p-6 border-b border-orange-50 bg-orange-50/30"><span class="text-[10px] font-black text-orange-600 bg-white px-3 py-1 rounded-lg border border-orange-200">${a.code}</span><h4 class="font-black text-slate-800 mt-3 text-lg tracking-tight">${a.user}</h4><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><div class="p-6 flex-1 bg-slate-50/30"><p class="text-xs text-slate-700 font-semibold italic">"${a.maintenanceLogs && a.maintenanceLogs.length > 0 ? a.maintenanceLogs[0].content : "Chờ xử lý..."}"</p></div><div class="p-4 bg-slate-50 grid grid-cols-2 gap-3"><button onclick="openModal('${a.id}')" class="bg-white border-2 border-slate-100 py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-slate-600">Chi tiết</button><button onclick="completeMaintenance('${a.id}')" class="bg-orange-500 text-white py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg">Xong</button></div></div>`).join('');
             refreshIcons();
         }
 
         function renderDashboard() {
             const stats = { total: assets.length, good: assets.filter(a => a.status === 'Tốt').length, warn: assets.filter(a => a.status === 'Đang sửa').length, dead: assets.filter(a => a.status === 'Hỏng' || a.status === 'Thanh lý').length };
-            document.getElementById('stat-total').textContent = stats.total;
-            document.getElementById('stat-good').textContent = stats.good;
-            document.getElementById('stat-warning').textContent = stats.warn;
-            document.getElementById('stat-liquidated').textContent = stats.dead;
+            const ids = ['stat-total', 'stat-good', 'stat-warning', 'stat-liquidated'];
+            const vals = [stats.total, stats.good, stats.warn, stats.dead];
+            ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.textContent = vals[i]; });
 
             const summary = document.getElementById('dept-summary');
-            summary.innerHTML = Object.entries(DEPT_GROUPS).map(([group, groupDepts]) => {
-                const groupAssets = assets.filter(a => groupDepts.includes(a.dept));
-                return `<div class="mb-4"><div class="flex items-center mb-4"><span class="bg-blue-600 w-1 h-4 rounded-full mr-2"></span><h5 class="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">${group} (${groupAssets.length})</h5></div><div class="space-y-4 pl-3">` + 
-                    groupDepts.map(d => {
-                        const count = assets.filter(a => a.dept === d).length;
-                        const perc = stats.total > 0 ? (count / stats.total * 100) : 0;
-                        if (count > 0 || stats.total === 0) return `<div><div class="flex justify-between items-center text-[10px] mb-1.5 font-black uppercase tracking-widest"><span class="text-slate-500">${d}</span><span class="text-blue-600">${count} MÁY</span></div><div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden shadow-inner"><div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all duration-1000" style="width: ${perc}%"></div></div></div>`;
-                        return '';
-                    }).join('') + `</div></div>`;
-            }).join('');
+            if(summary) {
+                summary.innerHTML = Object.entries(DEPT_GROUPS).map(([group, groupDepts]) => {
+                    const groupAssets = assets.filter(a => groupDepts.includes(a.dept));
+                    return `<div class="mb-4"><div class="flex items-center mb-4"><span class="bg-blue-600 w-1 h-4 rounded-full mr-2"></span><h5 class="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">${group} (${groupAssets.length})</h5></div><div class="space-y-4 pl-3">` + 
+                        groupDepts.map(d => {
+                            const count = assets.filter(a => a.dept === d).length;
+                            const perc = stats.total > 0 ? (count / stats.total * 100) : 0;
+                            if (count > 0 || stats.total === 0) return `<div><div class="flex justify-between items-center text-[10px] mb-1.5 font-black uppercase tracking-widest"><span class="text-slate-500">${d}</span><span class="text-blue-600">${count} MÁY</span></div><div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden shadow-inner"><div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all duration-1000" style="width: ${perc}%"></div></div></div>`;
+                            return '';
+                        }).join('') + `</div></div>`;
+                }).join('');
+            }
 
-            document.getElementById('location-summary').innerHTML = ['Khu A', 'Khu B', 'Khu C', 'Khu D'].map(l => {
-                const c = assets.filter(a => a.location === l).length;
-                const p = stats.total > 0 ? (c / stats.total * 100) : 0;
-                return `<div class="bg-slate-50 p-5 rounded-[24px] border border-slate-100 mb-3 shadow-inner"><div class="flex justify-between items-center text-xs mb-2 font-black uppercase tracking-widest"><span>${l}</span><span class="text-purple-600">${c} thiết bị</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-600 h-full transition-all duration-700" style="width: ${p}%"></div></div></div>`;
-            }).join('');
+            const loc = document.getElementById('location-summary'); 
+            if(loc) {
+                loc.innerHTML = ['Khu A', 'Khu B', 'Khu C', 'Khu D'].map(l => {
+                    const c = assets.filter(a => a.location === l).length;
+                    const p = stats.total > 0 ? (c / stats.total * 100) : 0;
+                    return `<div class="bg-slate-50 p-5 rounded-[24px] border border-slate-100 mb-3 shadow-inner"><div class="flex justify-between items-center text-xs mb-2 font-black uppercase tracking-widest"><span>${l}</span><span class="text-purple-600">${c} máy</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-600 h-full transition-all duration-700" style="width: ${p}%"></div></div></div>`;
+                }).join('');
+            }
         }
 
         window.updateMaintenanceBadge = () => {
@@ -719,7 +712,8 @@
             setTimeout(() => window.print(), 500);
         };
 
-        document.getElementById('asset-search').addEventListener('input', () => renderAssets());
+        const searchInp = document.getElementById('asset-search');
+        if(searchInp) searchInp.addEventListener('input', () => renderAssets());
     </script>
 </body>
 </html>
