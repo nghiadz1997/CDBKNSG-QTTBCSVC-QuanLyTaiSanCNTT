@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Asset Management - Cloud Dashboard</title>
+    <title>IT Asset Management - Cloud Responsive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .modal-overlay { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); }
         .sidebar-active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         @keyframes shake {
@@ -41,6 +41,13 @@
             }
         }
         .print-only { display: none; }
+
+        /* Mobile Sidebar Transitions */
+        #sidebar { transition: transform 0.3s ease-in-out; }
+        @media (max-width: 1024px) {
+            #sidebar.closed { transform: translateX(-100%); }
+            #sidebar.open { transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden">
@@ -48,160 +55,182 @@
     <div id="qr-print-grid" class="print-only"></div>
 
     <!-- LOGIN MODAL -->
-    <div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div id="login-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
         <div class="modal-overlay absolute inset-0" onclick="closeLoginModal()"></div>
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 relative z-10">
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100 relative z-10">
             <div class="text-center mb-8">
                 <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <i data-lucide="lock" class="text-white w-8 h-8"></i>
                 </div>
                 <h1 class="text-xl font-bold text-slate-800 tracking-tight uppercase">Xác thực Quản trị</h1>
-                <p class="text-slate-500 text-xs mt-1">Vui lòng đăng nhập để sử dụng tính năng chỉnh sửa</p>
+                <p class="text-slate-500 text-xs mt-1">Vui lòng đăng nhập để thực hiện thay đổi</p>
             </div>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Tài khoản</label>
-                    <input type="text" id="username" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="text" id="username" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Mật khẩu</label>
-                    <input type="password" id="password" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 </div>
                 <div id="login-error" class="hidden text-red-500 text-[10px] font-bold text-center py-2 bg-red-50 rounded-lg">
-                    Tài khoản hoặc mật khẩu không chính xác!
+                    Sai thông tin đăng nhập!
                 </div>
                 <button type="submit" id="login-btn" class="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 transition-all active:scale-95">
-                    ĐĂNG NHẬP
+                    XÁC NHẬN ĐĂNG NHẬP
                 </button>
             </form>
-            <button onclick="closeLoginModal()" class="w-full mt-2 text-[10px] text-slate-400 font-bold uppercase py-2">Hủy bỏ</button>
+            <button onclick="closeLoginModal()" class="w-full mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-slate-600">Bỏ qua</button>
         </div>
     </div>
 
     <!-- MAIN APP STRUCTURE -->
-    <div id="main-app" class="min-h-screen flex no-print">
+    <div id="main-app" class="min-h-screen flex flex-col lg:flex-row no-print overflow-hidden">
+        
+        <!-- Backdrop for mobile sidebar -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-[90] lg:hidden"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 hidden lg:flex flex-col shadow-2xl relative z-20">
-            <div class="p-6 text-center border-b border-slate-800/50">
+        <aside id="sidebar" class="closed fixed inset-y-0 left-0 w-72 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col shadow-2xl z-[100] lg:relative lg:translate-x-0 lg:w-64 lg:flex">
+            <div class="p-6 text-center border-b border-slate-800/50 relative">
+                <button onclick="toggleSidebar()" class="lg:hidden absolute right-4 top-6 text-slate-500">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
                 <div class="flex items-center justify-center space-x-3 text-white mb-2">
-                    <div class="p-2 bg-blue-600 rounded-xl">
+                    <div class="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-900/20">
                         <i data-lucide="monitor-speaker" class="w-6 h-6 text-white"></i>
                     </div>
                     <span class="font-black text-xl tracking-tighter uppercase text-white">NSG ASSET</span>
                 </div>
-                <p class="text-[10px] text-slate-500 font-bold tracking-[0.2em]">CLOUD MANAGEMENT</p>
+                <p class="text-[9px] text-slate-500 font-bold tracking-[0.25em]">IT INFRASTRUCTURE</p>
             </div>
-            <nav class="flex-1 px-4 space-y-2 mt-6">
-                <a href="#" onclick="showSection('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 p-3 rounded-xl transition-all sidebar-active">
+            
+            <nav class="flex-1 px-4 space-y-2 mt-6 overflow-y-auto custom-scrollbar">
+                <a href="#" onclick="showSection('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 p-3.5 rounded-xl transition-all sidebar-active">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Dashboard</span>
+                    <span class="font-semibold text-sm">Dashboard</span>
                 </a>
-                <a href="#" onclick="showSection('assets')" id="nav-assets" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-800 transition-all">
+                <a href="#" onclick="showSection('assets')" id="nav-assets" class="flex items-center space-x-3 p-3.5 rounded-xl hover:bg-slate-800 transition-all">
                     <i data-lucide="cpu" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Danh sách tài sản</span>
+                    <span class="font-semibold text-sm">Danh sách tài sản</span>
                 </a>
-                <a href="#" onclick="handleAdminFeature('maintenance')" id="nav-maintenance" class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-800 transition-all">
+                <a href="#" onclick="handleAdminFeature('maintenance')" id="nav-maintenance" class="flex items-center space-x-3 p-3.5 rounded-xl hover:bg-slate-800 transition-all">
                     <i data-lucide="wrench" class="w-5 h-5"></i>
-                    <span class="font-medium text-sm">Quản lý bảo trì</span>
-                    <span id="maintenance-badge" class="ml-auto bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full hidden">0</span>
+                    <span class="font-semibold text-sm">Bảo trì hệ thống</span>
+                    <span id="maintenance-badge" class="ml-auto bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden">0</span>
                 </a>
             </nav>
-            <div class="p-4 border-t border-slate-800">
-                <div id="user-info-panel" class="hidden flex flex-col space-y-2 mb-4">
-                    <div class="flex items-center space-x-2 px-2">
-                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span class="text-[10px] font-bold text-white uppercase tracking-widest">Admin Mode</span>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div id="user-info-panel" class="hidden flex flex-col space-y-3 mb-4">
+                    <div class="flex items-center justify-between bg-blue-600/10 p-3 rounded-xl border border-blue-600/20">
+                        <div class="flex items-center space-x-2 text-blue-400">
+                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Admin Mode</span>
+                        </div>
                     </div>
-                    <button onclick="logout()" class="flex items-center space-x-3 p-3 w-full rounded-xl hover:bg-red-900/30 text-red-400 transition-colors">
+                    <button onclick="logout()" class="flex items-center space-x-3 p-3 w-full rounded-xl hover:bg-red-900/30 text-red-400 border border-transparent hover:border-red-900/50 transition-all">
                         <i data-lucide="log-out" class="w-5 h-5"></i>
-                        <span class="font-medium text-sm text-red-400">Đăng xuất</span>
+                        <span class="font-bold text-xs uppercase">Đăng xuất</span>
                     </button>
                 </div>
-                <button id="login-trigger-btn" onclick="openLoginModal()" class="flex items-center justify-center space-x-3 p-3 w-full rounded-xl bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-all">
+                <button id="login-trigger-btn" onclick="openLoginModal()" class="flex items-center justify-center space-x-3 p-3.5 w-full rounded-xl bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                     <i data-lucide="user-cog" class="w-5 h-5"></i>
-                    <span class="font-bold text-xs uppercase tracking-widest">Đăng nhập Admin</span>
+                    <span class="font-black text-xs uppercase tracking-widest">ADMIN LOGIN</span>
                 </button>
             </div>
         </aside>
 
         <!-- Content Area -->
         <main class="flex-1 flex flex-col h-screen overflow-hidden">
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
-                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight italic">Hệ thống Quản lý Tài sản CNTT</h2>
-                <div class="flex items-center space-x-4">
-                    <button onclick="handleAdminFeature('printAllQRs')" class="flex items-center space-x-2 text-xs font-bold bg-white border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all active:scale-95">
-                        <i data-lucide="printer" class="w-4 h-4 text-blue-600"></i>
-                        <span class="hidden sm:inline">IN TOÀN BỘ QR</span>
+            <!-- Header -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 z-10">
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 bg-slate-100 rounded-lg text-slate-600">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
-                    <div class="flex items-center space-x-3 border-l pl-4 border-slate-200">
-                        <div id="connection-status" class="w-2 h-2 rounded-full bg-slate-300 transition-colors"></div>
-                        <div class="flex items-center space-x-2">
-                            <span id="role-label" class="text-[9px] font-black text-slate-400 uppercase bg-slate-100 px-2 py-0.5 rounded tracking-tighter">VIEWER</span>
-                        </div>
+                    <h2 id="page-title" class="text-lg md:text-xl font-black text-slate-800 tracking-tighter uppercase italic hidden sm:block">Dashboard</h2>
+                </div>
+                
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <button onclick="handleAdminFeature('printAllQRs')" class="flex items-center space-x-2 text-[10px] font-black bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl hover:bg-slate-200 transition-all active:scale-95 uppercase tracking-widest text-slate-700">
+                        <i data-lucide="printer" class="w-4 h-4 text-blue-600"></i>
+                        <span class="hidden md:inline">IN TẤT CẢ QR</span>
+                        <span class="md:hidden">IN QR</span>
+                    </button>
+                    <div class="flex items-center space-x-2 border-l pl-2 md:pl-4 border-slate-200">
+                        <div id="connection-status" class="w-2.5 h-2.5 rounded-full bg-slate-300 transition-colors border-2 border-white shadow-sm"></div>
+                        <span id="role-label" class="text-[9px] font-black text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded tracking-tighter">VIEWER</span>
                     </div>
                 </div>
             </header>
 
-            <div id="app-content" class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <!-- Dashboard View -->
-                <section id="section-dashboard" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Tổng tài sản</p><h3 class="text-3xl font-bold mt-1 text-slate-800" id="stat-total">0</h3></div>
+            <!-- Scrollable Content -->
+            <div id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                
+                <!-- Dashboard Section -->
+                <section id="section-dashboard" class="space-y-6 animate-in fade-in duration-500">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        <div class="bg-white p-5 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-xl hover:-translate-y-1">
+                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Tổng tài sản</p><h3 class="text-3xl font-black mt-1 text-slate-800" id="stat-total">0</h3></div>
                             <div class="bg-blue-50 p-4 rounded-2xl text-blue-600"><i data-lucide="monitor" class="w-6 h-6"></i></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Hoạt động tốt</p><h3 class="text-3xl font-bold mt-1 text-green-600" id="stat-good">0</h3></div>
+                        <div class="bg-white p-5 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-xl hover:-translate-y-1">
+                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Sẵn sàng</p><h3 class="text-3xl font-black mt-1 text-green-600" id="stat-good">0</h3></div>
                             <div class="bg-green-50 p-4 rounded-2xl text-green-600"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Đang bảo trì</p><h3 class="text-3xl font-bold mt-1 text-orange-500" id="stat-warning">0</h3></div>
+                        <div class="bg-white p-5 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-xl hover:-translate-y-1">
+                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Đang sửa</p><h3 class="text-3xl font-black mt-1 text-orange-500" id="stat-warning">0</h3></div>
                             <div class="bg-orange-50 p-4 rounded-2xl text-orange-500"><i data-lucide="wrench" class="w-6 h-6"></i></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Hỏng/Thanh lý</p><h3 class="text-3xl font-bold mt-1 text-red-400" id="stat-liquidated">0</h3></div>
+                        <div class="bg-white p-5 md:p-6 rounded-[24px] shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-xl hover:-translate-y-1">
+                            <div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Tạm ngưng</p><h3 class="text-3xl font-black mt-1 text-red-400" id="stat-liquidated">0</h3></div>
                             <div class="bg-red-50 p-4 rounded-2xl text-red-400"><i data-lucide="archive" class="w-6 h-6"></i></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-                            <h4 class="font-bold text-slate-800 mb-6 flex items-center uppercase text-sm tracking-widest">
-                                <i data-lucide="building-2" class="w-5 h-5 mr-2 text-blue-500"></i> Đơn vị sử dụng
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <!-- Chart Dept -->
+                        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 flex flex-col">
+                            <h4 class="font-black text-slate-800 mb-6 flex items-center uppercase text-xs tracking-widest">
+                                <i data-lucide="building-2" class="w-4 h-4 mr-2 text-blue-500"></i> Thống kê Đơn vị
                             </h4>
-                            <div id="dept-summary" class="space-y-6 flex-1 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar"></div>
+                            <div id="dept-summary" class="space-y-6 flex-1 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar"></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <h4 class="font-bold text-slate-800 mb-6 flex items-center uppercase text-sm tracking-widest">
-                                <i data-lucide="map-pin" class="w-5 h-5 mr-2 text-purple-500"></i> Khu vực phân bổ
+                        <!-- Chart Location -->
+                        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
+                            <h4 class="font-black text-slate-800 mb-6 flex items-center uppercase text-xs tracking-widest">
+                                <i data-lucide="map-pin" class="w-4 h-4 mr-2 text-purple-500"></i> Phân bổ khu vực
                             </h4>
                             <div id="location-summary" class="space-y-4"></div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Assets List -->
-                <section id="section-assets" class="hidden space-y-6">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                            <input type="text" id="asset-search" placeholder="Tìm kiếm tài sản hoặc người dùng..." class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all">
+                <!-- Assets List Section -->
+                <section id="section-assets" class="hidden space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+                    <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+                        <div class="relative flex-1 max-w-lg">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="asset-search" placeholder="Mã máy, người dùng..." class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-[20px] focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all text-sm font-medium">
                         </div>
-                        <button id="admin-add-btn" onclick="openModal()" class="hidden bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 flex items-center shadow-xl active:scale-95 transition-all">
-                            <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i> THÊM TÀI SẢN
+                        <button id="admin-add-btn" onclick="openModal()" class="hidden bg-blue-600 text-white px-8 py-3.5 rounded-[20px] font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-95 transition-all">
+                            + Thêm máy mới
                         </button>
                     </div>
 
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left">
+                    <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left whitespace-nowrap min-w-[700px]">
                                 <thead class="bg-slate-50 border-b border-slate-100">
                                     <tr>
-                                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">STT</th>
-                                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mã Tài Sản</th>
-                                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Người Sử Dụng</th>
-                                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Trạng Thái</th>
-                                        <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center bg-blue-50/30">Thao tác</th>
+                                        <th class="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">STT</th>
+                                        <th class="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Mã Tài Sản</th>
+                                        <th class="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Người Sử Dụng</th>
+                                        <th class="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Trạng Thái</th>
+                                        <th class="px-6 py-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center bg-blue-50/30">Quản lý</th>
                                     </tr>
                                 </thead>
                                 <tbody id="asset-table-body" class="divide-y divide-slate-50"></tbody>
@@ -210,103 +239,111 @@
                     </div>
                 </section>
 
-                <!-- Maintenance -->
-                <section id="section-maintenance" class="hidden space-y-6">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-slate-800 tracking-tight italic">Danh sách thiết bị đang bảo trì</h3>
-                    </div>
-                    <div id="maintenance-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-                    <div id="maintenance-empty" class="hidden bg-white p-20 rounded-3xl border border-dashed border-slate-200 text-center">
+                <!-- Maintenance Section -->
+                <section id="section-maintenance" class="hidden space-y-6 animate-in fade-in duration-500">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Sửa chữa & Bảo trì</h3>
+                    <div id="maintenance-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    <div id="maintenance-empty" class="hidden bg-white p-12 md:p-24 rounded-[40px] border border-dashed border-slate-200 text-center">
                         <i data-lucide="check-circle" class="w-16 h-16 text-green-100 mx-auto mb-4"></i>
-                        <h2 class="text-2xl font-bold text-slate-800 uppercase tracking-tighter">Hệ thống ổn định</h2>
-                        <p class="text-slate-400 mt-1">Hiện không có thiết bị nào đang trong quá trình sửa chữa.</p>
+                        <h2 class="text-2xl font-black text-slate-800 uppercase">Hệ thống khỏe mạnh</h2>
+                        <p class="text-slate-400 mt-1 font-medium">Tất cả thiết bị đều đang hoạt động tốt.</p>
                     </div>
                 </section>
             </div>
         </main>
     </div>
 
-    <!-- ASSET MODAL -->
-    <div id="asset-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="modal-overlay absolute inset-0"></div>
-        <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden relative z-10 flex flex-col transition-all border border-slate-100">
-            <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-slate-50/50">
-                <h3 id="modal-title" class="text-xl font-black text-slate-800 flex items-center tracking-tight uppercase">
-                    <i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Chi tiết tài sản
+    <!-- ASSET MODAL (Admin Edit) -->
+    <div id="asset-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center sm:p-4">
+        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+        <div class="bg-white w-full h-full sm:h-auto sm:max-w-7xl sm:max-h-[90vh] sm:rounded-[40px] shadow-2xl overflow-hidden relative z-10 flex flex-col border border-slate-100">
+            <div class="px-6 py-6 md:px-8 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-slate-50/50">
+                <h3 id="modal-title" class="text-lg md:text-xl font-black text-slate-800 flex items-center tracking-tight uppercase">
+                    <i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Chi tiết
                 </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:bg-white p-2.5 rounded-full">
+                <button onclick="closeModal()" class="text-slate-400 hover:bg-white p-2.5 rounded-full shadow-sm border border-slate-100">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
             
             <div class="flex-1 flex overflow-hidden">
-                <form id="asset-form" class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white">
+                <form id="asset-form" class="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar bg-white">
                     <input type="hidden" id="edit-id" value="">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <!-- Col 1: Main config -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                        <!-- Cấu hình hệ thống -->
                         <div class="space-y-6">
-                            <h4 class="text-xs font-black text-blue-600 border-b-2 border-blue-500 pb-2 inline-block tracking-widest uppercase">Cấu hình hệ thống</h4>
+                            <h4 class="text-[10px] font-black text-blue-600 border-b-2 border-blue-500 pb-2 inline-block tracking-[0.2em] uppercase">1. Thông tin phần cứng</h4>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Mã tài sản</label>
-                                    <div class="flex space-x-2"><input type="text" id="asset-code" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-sm font-bold text-blue-600 shadow-inner"><button type="button" onclick="generateRandomCode()" class="p-3 bg-blue-50 text-blue-600 rounded-2xl transition-all hover:bg-blue-100"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button></div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Mã tài sản</label>
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="asset-code" readonly class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-mono text-xs font-bold text-blue-600 shadow-inner">
+                                        <button type="button" onclick="generateRandomCode()" class="p-3 bg-blue-50 text-blue-600 rounded-2xl transition-all hover:bg-blue-100"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                    </div>
                                 </div>
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Người dùng</label><input type="text" id="asset-user" required class="w-full px-4 py-3 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500"></div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Người dùng</label>
+                                    <input type="text" id="asset-user" required class="w-full px-4 py-3 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Đơn vị</label>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Đơn vị</label>
                                     <select id="asset-dept" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-bold outline-none">
                                         <optgroup label="KHỐI HÀNH CHÍNH"><option>Phòng QTTB&CSVC</option><option>Phòng QLĐT</option><option>Phòng KHTC</option><option>Phòng TCHC</option><option>Phòng KTĐBCL</option><option>Phòng KHCN&HT</option><option>Phòng TS</option><option>Phòng GhiDanh</option><option>Phòng TTĐTLX</option></optgroup>
                                         <optgroup label="KHỐI GIẢNG DẠY"><option>Khoa CNTT-KTĐ</option><option>Khoa Cơ Khí</option><option>Khoa Y Dược</option><option>Khoa GDĐC</option><option>Khoa CSSĐ-NDT</option></optgroup>
                                     </select>
                                 </div>
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Vị trí</label><select id="asset-location" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-bold outline-none"><option>Khu A</option><option>Khu B</option><option>Khu C</option><option>Khu D</option></select></div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Khu vực</label>
+                                    <select id="asset-location" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-bold"><option>Khu A</option><option>Khu B</option><option>Khu C</option><option>Khu D</option></select>
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Trạng thái</label><select id="asset-status" class="w-full px-4 py-3 border border-slate-200 rounded-2xl font-bold outline-none"><option value="Tốt">Hoạt động Tốt</option><option value="Đang sửa">Đang bảo trì</option><option value="Hỏng">Hư hỏng</option><option value="Thanh lý">Thanh lý</option></select></div>
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">CPU</label><input type="text" id="conf-cpu" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium outline-none"></div>
+                                <div class="col-span-2 sm:col-span-1"><label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Trạng thái</label><select id="asset-status" class="w-full px-4 py-3 border border-slate-200 rounded-2xl font-bold text-xs"><option value="Tốt">Tốt</option><option value="Đang sửa">Đang sửa</option><option value="Hỏng">Hỏng</option><option value="Thanh lý">Thanh lý</option></select></div>
+                                <div class="col-span-2 sm:col-span-1"><label class="text-[9px] font-black text-slate-400 uppercase block mb-1">CPU</label><input type="text" id="conf-cpu" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm"></div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">RAM</label><input type="text" id="conf-ram" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium outline-none"></div>
-                                <div><label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Lưu trữ</label><input type="text" id="conf-storage" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium outline-none"></div>
+                                <div class="col-span-2 sm:col-span-1"><label class="text-[9px] font-black text-slate-400 uppercase block mb-1">RAM</label><input type="text" id="conf-ram" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm"></div>
+                                <div class="col-span-2 sm:col-span-1"><label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Ổ cứng</label><input type="text" id="conf-storage" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm"></div>
                             </div>
                         </div>
 
-                        <!-- Col 2: Peripherals -->
+                        <!-- Màn hình & Ngoại vi -->
                         <div class="space-y-6">
-                            <h4 class="text-xs font-black text-purple-600 border-b-2 border-purple-500 pb-2 inline-block tracking-widest uppercase">Màn hình & Ngoại vi</h4>
-                            
-                            <div class="p-5 bg-slate-50 rounded-[24px] space-y-4 border border-slate-100 shadow-inner">
+                            <h4 class="text-[10px] font-black text-purple-600 border-b-2 border-purple-500 pb-2 inline-block tracking-[0.2em] uppercase">2. Thiết bị ngoại vi</h4>
+                            <div class="p-5 bg-purple-50/30 rounded-[24px] space-y-4 border border-purple-100 shadow-inner">
                                 <label class="text-[10px] font-black text-purple-500 uppercase flex items-center tracking-widest"><i data-lucide="monitor" class="w-4 h-4 mr-2"></i> Màn hình</label>
-                                <input type="text" id="monitor-brand" placeholder="Hãng & Model" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium outline-none">
+                                <input type="text" id="monitor-brand" placeholder="Hãng & Model" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" id="monitor-size" placeholder="Kích thước (inch)" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs outline-none">
-                                    <input type="text" id="monitor-res" placeholder="Độ phân giải" class="w-full px-4 py-3 border border-slate-200 rounded-xl text-xs outline-none">
+                                    <input type="text" id="monitor-size" placeholder="Kích thước" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs outline-none">
+                                    <input type="text" id="monitor-res" placeholder="Độ phân giải" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs outline-none">
                                 </div>
                             </div>
 
                             <div class="space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <label class="text-[10px] font-black text-green-600 uppercase flex items-center tracking-widest"><i data-lucide="mouse-pointer" class="w-4 h-4 mr-2"></i> Thiết bị ngoại vi</label>
-                                    <button type="button" onclick="addPeripheralRow()" class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 uppercase tracking-widest transition-all">+ Thêm thiết bị</button>
+                                <div class="flex items-center justify-between px-2">
+                                    <label class="text-[10px] font-black text-green-600 uppercase flex items-center tracking-widest"><i data-lucide="mouse-pointer" class="w-4 h-4 mr-2"></i> Phụ kiện kèm theo</label>
+                                    <button type="button" onclick="addPeripheralRow()" class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 uppercase tracking-widest transition-all shadow-sm">+ Thêm</button>
                                 </div>
-                                <div id="peripherals-container" class="space-y-2"></div>
+                                <div id="peripherals-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar"></div>
                             </div>
                         </div>
 
-                        <!-- Col 3: Logs -->
-                        <div class="bg-slate-50 rounded-[24px] p-6 border border-slate-100 flex flex-col h-full shadow-inner">
-                            <h4 class="text-xs font-black text-orange-600 border-b-2 border-orange-400 pb-2 inline-block tracking-widest uppercase mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Lịch sử bảo trì</h4>
-                            <div class="mb-4 space-y-2">
-                                <textarea id="maintenance-entry" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm h-24 resize-none outline-none focus:ring-2 focus:ring-orange-500" placeholder="Nhập nội dung sửa chữa..."></textarea>
-                                <button type="button" onclick="addMaintenanceLog()" class="w-full bg-orange-500 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Lưu ghi chú</button>
+                        <!-- Lịch sử bảo trì -->
+                        <div class="bg-slate-50 rounded-[32px] p-6 border border-slate-100 flex flex-col h-full shadow-inner">
+                            <h4 class="text-[10px] font-black text-orange-600 border-b-2 border-orange-400 pb-2 inline-block tracking-[0.2em] uppercase mb-4 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2"></i> 3. Nhật ký sửa chữa</h4>
+                            <div class="mb-4 space-y-3">
+                                <textarea id="maintenance-entry" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs h-24 resize-none outline-none focus:ring-2 focus:ring-orange-500 shadow-sm" placeholder="Ghi chú thay thế linh kiện hoặc sửa lỗi..."></textarea>
+                                <button type="button" onclick="addMaintenanceLog()" class="w-full bg-orange-500 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 transition-all">Lưu ghi chú</button>
                             </div>
                             <div id="maintenance-history-list" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar"></div>
                         </div>
                     </div>
 
-                    <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end space-x-4">
-                        <button type="button" onclick="closeModal()" class="px-10 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">Hủy bỏ</button>
-                        <button type="submit" class="px-12 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all uppercase tracking-widest">Cập nhật Cloud</button>
+                    <div class="mt-8 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3">
+                        <button type="button" onclick="closeModal()" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold uppercase text-[10px] tracking-widest hover:bg-slate-200 order-2 sm:order-1 transition-all">Hủy bỏ</button>
+                        <button type="submit" class="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-500/30 active:scale-95 transition-all uppercase text-[10px] tracking-[0.15em] order-1 sm:order-2">Đồng bộ Cloud</button>
                     </div>
                 </form>
             </div>
@@ -314,32 +351,32 @@
     </div>
 
     <!-- QR & DETAILS MODAL -->
-    <div id="qr-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div id="qr-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center sm:p-4">
         <div class="modal-overlay absolute inset-0" onclick="closeQrModal()"></div>
-        <div class="bg-white rounded-[40px] shadow-2xl relative z-10 w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-100">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-blue-50/50">
+        <div class="bg-white w-full h-full sm:h-auto sm:max-w-6xl sm:rounded-[48px] shadow-2xl overflow-hidden relative z-10 flex flex-col border border-slate-100">
+            <div class="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-blue-50/50">
                 <div class="flex items-center space-x-4">
-                    <div class="p-4 bg-blue-600 rounded-[24px] text-white shadow-lg"><i data-lucide="qr-code" class="w-6 h-6"></i></div>
-                    <div><h4 class="font-black text-slate-800 text-xl uppercase tracking-tighter">Thông số & QR Code</h4><p id="qr-code-text" class="text-blue-600 font-mono font-bold text-sm tracking-[0.3em] uppercase"></p></div>
+                    <div class="p-4 bg-blue-600 rounded-[20px] text-white shadow-lg"><i data-lucide="qr-code" class="w-7 h-7"></i></div>
+                    <div><h4 class="font-black text-slate-800 text-xl uppercase tracking-tighter">Tra cứu thông số</h4><p id="qr-code-text" class="text-blue-600 font-mono font-bold text-sm tracking-[0.4em] uppercase"></p></div>
                 </div>
-                <button onclick="closeQrModal()" class="text-slate-400 hover:bg-white p-2.5 rounded-full transition-all border border-transparent hover:border-slate-100 shadow-sm"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button onclick="closeQrModal()" class="text-slate-400 hover:bg-white p-3 rounded-full transition-all shadow-sm border border-slate-200"><i data-lucide="x" class="w-7 h-7"></i></button>
             </div>
-            <div class="flex-1 overflow-y-auto p-10 custom-scrollbar bg-white">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    <div class="flex flex-col items-center justify-center bg-slate-50 p-8 rounded-[40px] border-2 border-dashed border-slate-200">
-                        <div id="qrcode-container" class="bg-white p-8 border-8 border-white rounded-[32px] mb-6 shadow-2xl"></div>
-                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] text-center leading-relaxed">Quét mã bằng điện thoại để<br>xem cấu hình nhanh tại chỗ</p>
+            <div class="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-white">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 items-start">
+                    <div class="flex flex-col items-center justify-center bg-slate-50 p-10 rounded-[48px] border-2 border-dashed border-slate-200">
+                        <div id="qrcode-container" class="bg-white p-8 border-[12px] border-white rounded-[40px] mb-8 shadow-2xl"></div>
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] text-center leading-loose">Quét mã QR để truy xuất nhanh<br>thông tin cấu hình thiết bị</p>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h5 class="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] flex items-center border-b border-slate-50 pb-4"><i data-lucide="layers" class="w-4 h-4 mr-2"></i> Cấu hình thiết bị</h5>
-                            <div id="qr-detail-content" class="text-sm text-slate-700 space-y-4 font-semibold"></div>
+                    <div class="space-y-8">
+                        <div class="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm space-y-8">
+                            <h5 class="text-[11px] font-black text-slate-300 uppercase tracking-[0.3em] flex items-center border-b border-slate-50 pb-5"><i data-lucide="cpu" class="w-5 h-5 mr-3"></i> Thông số linh kiện</h5>
+                            <div id="qr-detail-content" class="text-sm text-slate-700 space-y-5 font-semibold"></div>
                         </div>
                     </div>
-                    <div class="space-y-6">
-                        <div class="bg-orange-50 rounded-[32px] p-8 border border-orange-100 min-h-[300px]">
-                            <h6 class="text-[11px] font-black text-orange-600 uppercase mb-5 flex items-center tracking-[0.2em]"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Lịch sử sửa chữa</h6>
-                            <div id="qr-maintenance-history-list" class="space-y-4 pr-2 custom-scrollbar overflow-y-auto max-h-[400px]"></div>
+                    <div class="space-y-8">
+                        <div class="bg-orange-50 rounded-[40px] p-8 border border-orange-100 min-h-[400px]">
+                            <h6 class="text-[11px] font-black text-orange-600 uppercase mb-6 flex items-center tracking-[0.3em]"><i data-lucide="history" class="w-5 h-5 mr-3"></i> Nhật ký sửa chữa</h6>
+                            <div id="qr-maintenance-history-list" class="space-y-5 pr-2 custom-scrollbar overflow-y-auto max-h-[450px]"></div>
                         </div>
                     </div>
                 </div>
@@ -348,9 +385,9 @@
     </div>
 
     <!-- LOADING OVERLAY -->
-    <div id="app-loading" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-slate-400 text-sm font-bold uppercase tracking-widest animate-pulse">Đang đồng bộ Cloud...</p>
+    <div id="app-loading" class="fixed inset-0 z-[300] bg-white flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="w-20 h-20 border-[6px] border-blue-50 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+        <p class="text-slate-400 text-xs font-black uppercase tracking-[0.4em] animate-pulse">Sẵn sàng hệ thống Cloud</p>
     </div>
 
     <script type="module">
@@ -397,13 +434,24 @@
                     if(currentSection === 'maintenance') renderMaintenanceList();
                     const loader = document.getElementById('app-loading');
                     if(loader) loader.classList.add('opacity-0', 'pointer-events-none');
-                }, (error) => {
-                    console.error("Firestore Error:", error);
                 });
-            } catch (err) { console.error("Firebase Auth Error:", err); }
+            } catch (err) { console.error("Cloud Connection Error:", err); }
         };
 
         window.addEventListener('DOMContentLoaded', () => { init(); refreshIcons(); });
+
+        // --- RESPONSIVE LOGIC ---
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar.classList.contains('closed')) {
+                sidebar.classList.replace('closed', 'open');
+                backdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.replace('open', 'closed');
+                backdrop.classList.add('hidden');
+            }
+        };
 
         // --- AUTH ---
         window.openLoginModal = () => document.getElementById('login-modal').classList.remove('hidden');
@@ -419,13 +467,15 @@
                 document.getElementById('login-trigger-btn').classList.add('hidden');
                 document.getElementById('user-info-panel').classList.remove('hidden');
                 document.getElementById('admin-add-btn').classList.remove('hidden');
-                document.getElementById('role-label').textContent = "ADMIN MODE";
-                document.getElementById('role-label').className = "text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded tracking-tighter shadow-sm border border-blue-100";
+                const role = document.getElementById('role-label');
+                role.textContent = "ADMIN MODE";
+                role.className = "text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded tracking-tighter border border-blue-100";
                 renderAssets();
             } else {
                 const err = document.getElementById('login-error');
                 err.classList.remove('hidden');
-                setTimeout(() => err.classList.add('hidden'), 2000);
+                document.getElementById('login-btn').classList.add('animate-shake', 'bg-red-600');
+                setTimeout(() => { err.classList.add('hidden'); document.getElementById('login-btn').classList.remove('animate-shake', 'bg-red-600'); }, 2000);
             }
         });
 
@@ -434,8 +484,9 @@
             document.getElementById('user-info-panel').classList.add('hidden');
             document.getElementById('login-trigger-btn').classList.remove('hidden');
             document.getElementById('admin-add-btn').classList.add('hidden');
-            document.getElementById('role-label').textContent = "VIEWER";
-            document.getElementById('role-label').className = "text-[9px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded tracking-tighter";
+            const role = document.getElementById('role-label');
+            role.textContent = "VIEWER";
+            role.className = "text-[9px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded tracking-tighter";
             if(currentSection === 'maintenance') showSection('dashboard');
             renderAssets();
         };
@@ -446,7 +497,6 @@
             if (action === 'printAllQRs') printAllQRs();
         };
 
-        // --- UTILS ---
         function refreshIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
         window.generateRandomCode = () => { document.getElementById('asset-code').value = 'IT-' + Math.random().toString(36).substr(2, 6).toUpperCase(); };
 
@@ -463,6 +513,7 @@
             const titles = { 'dashboard': 'Dashboard', 'assets': 'Danh sách tài sản', 'maintenance': 'Quản lý bảo trì' };
             document.getElementById('page-title').textContent = titles[sectionId];
             if(sectionId === 'maintenance') renderMaintenanceList();
+            if(window.innerWidth < 1024) toggleSidebar(); // Auto-close on mobile selection
             refreshIcons();
         };
 
@@ -471,27 +522,24 @@
             const container = document.getElementById('peripherals-container');
             const rowId = 'peri-' + Date.now() + Math.random().toString(36).substr(2, 4);
             const div = document.createElement('div');
-            div.className = "flex space-x-2 peri-row animate-in fade-in duration-300";
+            div.className = "flex space-x-2 peri-row animate-in slide-in-from-left-2 duration-200";
             div.id = rowId;
             div.innerHTML = `
-                <select class="w-1/3 px-3 py-2 border border-slate-200 rounded-xl text-[10px] font-bold outline-none peri-type">
+                <select class="w-1/3 px-3 py-2.5 border border-slate-200 rounded-xl text-[9px] font-black uppercase outline-none peri-type">
                     <option value="Chuột" ${type === "Chuột" ? "selected" : ""}>Chuột</option>
                     <option value="Bàn phím" ${type === "Bàn phím" ? "selected" : ""}>Bàn phím</option>
                     <option value="Máy in" ${type === "Máy in" ? "selected" : ""}>Máy in</option>
-                    <option value="Máy Scan" ${type === "Máy Scan" ? "selected" : ""}>Máy Scan</option>
                     <option value="Loa" ${type === "Loa" ? "selected" : ""}>Loa</option>
-                    <option value="Webcam" ${type === "Webcam" ? "selected" : ""}>Webcam</option>
-                    <option value="Tai nghe" ${type === "Tai nghe" ? "selected" : ""}>Tai nghe</option>
                     <option value="Khác" ${type === "Khác" ? "selected" : ""}>Khác</option>
                 </select>
-                <input type="text" value="${model}" placeholder="Model thiết bị" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none peri-model">
+                <input type="text" value="${model}" placeholder="Thương hiệu/Model" class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold outline-none peri-model">
                 <button type="button" onclick="document.getElementById('${rowId}').remove()" class="p-2 text-slate-300 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             `;
             container.appendChild(div);
             refreshIcons();
         };
 
-        // --- CRUD ACTIONS ---
+        // --- CRUD ---
         window.openModal = (id = "") => {
             if (!isLoggedIn) { openLoginModal(); return; }
             const form = document.getElementById('asset-form');
@@ -501,7 +549,7 @@
             
             if (id) {
                 const a = assets.find(x => x.id === id);
-                document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-6 h-6 mr-3 text-blue-600"></i> Sửa: ${a.code}`;
+                document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 mr-2 text-blue-600"></i> ${a.code}`;
                 document.getElementById('edit-id').value = id;
                 document.getElementById('asset-code').value = a.code || '';
                 document.getElementById('asset-user').value = a.user || '';
@@ -514,17 +562,14 @@
                 document.getElementById('monitor-brand').value = a.monitorBrand || '';
                 document.getElementById('monitor-size').value = a.monitorSize || '';
                 document.getElementById('monitor-res').value = a.monitorRes || '';
-                
-                if (a.peripherals && Array.isArray(a.peripherals)) {
-                    a.peripherals.forEach(p => addPeripheralRow(p.type, p.model));
-                }
+                if (a.peripherals) a.peripherals.forEach(p => addPeripheralRow(p.type, p.model));
                 renderMaintenanceHistory(id);
             } else {
-                document.getElementById('modal-title').innerHTML = '<i data-lucide="plus" class="w-6 h-6 mr-3 text-blue-600"></i> Thêm máy tính';
+                document.getElementById('modal-title').innerHTML = '<i data-lucide="plus" class="w-5 h-5 mr-2 text-blue-600"></i> THÊM MÁY';
                 document.getElementById('edit-id').value = "";
                 generateRandomCode();
                 addPeripheralRow("Chuột", ""); addPeripheralRow("Bàn phím", "");
-                document.getElementById('maintenance-history-list').innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4 uppercase font-bold tracking-widest">Thiết bị mới</p>';
+                document.getElementById('maintenance-history-list').innerHTML = '<p class="text-[9px] text-slate-300 italic text-center py-4 font-bold tracking-widest">CHƯA CÓ LỊCH SỬ</p>';
             }
             refreshIcons();
         };
@@ -564,7 +609,7 @@
         window.deleteAsset = async (id) => {
             if (!isLoggedIn) return;
             const a = assets.find(x => x.id === id);
-            if (a && confirm(`Xóa vĩnh viễn tài sản ${a.code}?`)) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id));
+            if (a && confirm(`Xác nhận xóa tài sản ${a.code}?`)) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id));
         };
 
         // --- MAINTENANCE ---
@@ -584,7 +629,7 @@
             const list = document.getElementById('maintenance-history-list');
             const a = assets.find(x => x.id === id);
             const logs = a ? (a.maintenanceLogs || []) : [];
-            list.innerHTML = logs.length === 0 ? '<p class="text-[10px] text-slate-400 italic text-center py-4">Chưa có lịch sử.</p>' : logs.map(log => `<div class="bg-white p-3 rounded-2xl border shadow-sm border-l-4 border-l-orange-400 mb-2 animate-in slide-in-from-right-2 duration-300"><div class="text-[9px] font-black text-blue-500 mb-1">${log.date}</div><p class="text-[11px] text-slate-700 leading-relaxed font-semibold">${log.content}</p></div>`).join('');
+            list.innerHTML = logs.length === 0 ? '<p class="text-[9px] text-slate-300 italic text-center py-4 font-bold tracking-widest">TRỐNG</p>' : logs.map(log => `<div class="bg-white p-3 rounded-2xl border shadow-sm border-l-4 border-l-orange-400 mb-2"><div class="text-[9px] font-black text-blue-500 mb-1">${log.date}</div><p class="text-xs text-slate-700 leading-relaxed font-bold">${log.content}</p></div>`).join('');
         }
 
         window.completeMaintenance = async (id) => {
@@ -594,10 +639,10 @@
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'assets', id), { maintenanceLogs: logs, status: 'Tốt' });
         };
 
-        // --- QR & RENDERERS ---
+        // --- QR & RENDER ---
         function getFullConfigText(a) {
             let pText = (a.peripherals || []).map(p => `${p.type}: ${p.model}`).join(', ');
-            return `NSG ASSET INFO\nMã: ${a.code}\nUser: ${a.user}\nCPU: ${a.cpu}\nRAM: ${a.ram}\nHDD/SSD: ${a.storage}\nMonitor: ${a.monitorBrand} (${a.monitorSize}")\nPeri: ${pText || 'None'}\nStatus: ${a.status}`;
+            return `NSG ASSET - ${a.code}\nUser: ${a.user}\nConfig: ${a.cpu}/${a.ram}/${a.storage}\nMonitor: ${a.monitorBrand}\nPeri: ${pText || 'None'}\nStatus: ${a.status}`;
         }
 
         window.showQr = (id) => {
@@ -605,30 +650,37 @@
             document.getElementById('qrcode-container').innerHTML = "";
             document.getElementById('qr-code-text').textContent = a.code;
             
-            const pListHtml = (a.peripherals || []).map(p => `<div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-bold">${p.type}:</span><span class="text-slate-800 text-right">${p.model}</span></div>`).join('');
+            const pListHtml = (a.peripherals || []).map(p => `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-2"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-black">${p.type}:</span><span class="text-slate-800 text-right font-bold">${p.model}</span></div>`).join('');
 
             document.getElementById('qr-detail-content').innerHTML = `
-                <div class="bg-blue-50/50 p-4 rounded-2xl mb-4 border border-blue-100/50">
-                    <div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-400 uppercase font-black">Người sử dụng:</span><span class="text-blue-600 font-bold">${a.user}</span></div>
-                    <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 uppercase font-bold">Vị trí:</span><span class="text-slate-700 text-xs font-bold">${a.location} - ${a.dept}</span></div>
-                </div>
-                <div class="space-y-2 px-1">
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">CPU:</span><span class="text-slate-800 font-bold text-right">${a.cpu}</span></div>
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">Bộ nhớ:</span><span class="text-slate-800 text-right">${a.ram} / ${a.storage}</span></div>
-                    <div class="flex justify-between items-center text-[11px] border-b border-slate-50 pb-1.5"><span class="text-slate-400 uppercase font-black text-[9px]">Màn hình:</span><span class="text-slate-800 text-right">${a.monitorBrand ? a.monitorBrand + ' (' + a.monitorSize + '")' : 'N/A'}</span></div>
-                    <div class="pt-2">
-                        <label class="text-[9px] font-black text-green-500 uppercase tracking-widest block mb-2 border-l-2 border-green-500 pl-2">Thiết bị ngoại vi:</label>
-                        ${pListHtml || '<div class="text-[10px] text-slate-300 italic">Không có thiết bị đi kèm</div>'}
+                <div class="bg-blue-600 p-6 rounded-[32px] mb-6 text-white shadow-xl shadow-blue-500/20">
+                    <span class="text-[10px] font-black uppercase opacity-60 tracking-[0.2em]">Người sử dụng</span>
+                    <h5 class="text-xl font-black tracking-tight mb-4">${a.user}</h5>
+                    <div class="flex items-center space-x-2 text-[10px] font-bold bg-white/10 w-fit px-3 py-1.5 rounded-full border border-white/20">
+                        <i data-lucide="map-pin" class="w-3 h-3"></i>
+                        <span class="uppercase tracking-widest">${a.location} - ${a.dept}</span>
                     </div>
-                    <div class="flex justify-between items-center p-3 mt-4 bg-blue-600 rounded-xl shadow-lg text-white uppercase text-[10px] font-black tracking-widest"><span>Trạng thái:</span><span>${a.status}</span></div>
+                </div>
+                <div class="space-y-4 px-2">
+                    <div class="flex justify-between items-center text-xs border-b border-slate-100 pb-3"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-black">Cấu hình CPU:</span><span class="text-slate-800 font-black">${a.cpu}</span></div>
+                    <div class="flex justify-between items-center text-xs border-b border-slate-100 pb-3"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-black">Bộ nhớ/Storage:</span><span class="text-slate-800 font-black">${a.ram} / ${a.storage}</span></div>
+                    <div class="flex justify-between items-center text-xs border-b border-slate-100 pb-3"><span class="text-slate-400 uppercase tracking-widest text-[9px] font-black">Màn hình chính:</span><span class="text-slate-800 font-black">${a.monitorBrand ? a.monitorBrand + ' (' + a.monitorSize + '")' : 'N/A'}</span></div>
+                    <div class="pt-2">
+                        <label class="text-[9px] font-black text-green-600 uppercase tracking-widest block mb-4 border-l-4 border-green-500 pl-3">Thiết bị ngoại vi</label>
+                        <div class="space-y-3">${pListHtml || '<div class="text-xs text-slate-300 italic">Không có thiết bị đi kèm</div>'}</div>
+                    </div>
+                    <div class="mt-8 flex items-center justify-between p-4 bg-slate-900 rounded-2xl text-white">
+                        <span class="text-[10px] font-black uppercase tracking-widest opacity-60">Tình trạng</span>
+                        <span class="font-black text-sm uppercase">${a.status}</span>
+                    </div>
                 </div>
             `;
             
             const logs = a.maintenanceLogs || [];
-            document.getElementById('qr-maintenance-history-list').innerHTML = logs.length > 0 ? logs.map(l => `<div class="bg-white p-4 rounded-2xl border border-orange-100 mb-2 border-l-4 border-l-orange-400 shadow-sm"><div class="text-[9px] font-black text-blue-500 mb-1">${l.date}</div><p class="text-[11px] text-slate-800 font-bold italic leading-relaxed">"${l.content}"</p></div>`).join('') : `<div class="text-xs text-orange-800 italic p-10 text-center border-4 border-dotted border-orange-100 rounded-[40px]">Chưa ghi nhận bảo trì.</div>`;
+            document.getElementById('qr-maintenance-history-list').innerHTML = logs.length > 0 ? logs.map(l => `<div class="bg-white p-5 rounded-[24px] border border-orange-100 mb-3 border-l-4 border-l-orange-400 shadow-sm"><div class="text-[9px] font-black text-blue-600 mb-1 tracking-widest">${l.date}</div><p class="text-xs text-slate-800 font-bold leading-relaxed italic">"${l.content}"</p></div>`).join('') : `<div class="text-xs text-orange-800 italic p-12 text-center border-4 border-dotted border-orange-200 rounded-[48px] uppercase font-black tracking-widest opacity-50">Chưa có nhật ký</div>`;
             
             document.getElementById('qr-modal').classList.remove('hidden');
-            new QRCode(document.getElementById('qrcode-container'), { text: getFullConfigText(a), width: 220, height: 220, colorDark: "#0f172a", correctLevel: QRCode.CorrectLevel.M });
+            new QRCode(document.getElementById('qrcode-container'), { text: getFullConfigText(a), width: 220, height: 220, colorDark: "#0f172a", correctLevel: QRCode.CorrectLevel.H });
             refreshIcons();
         };
 
@@ -641,16 +693,16 @@
             tbody.innerHTML = filtered.map((a, i) => {
                 const colors = { 'Tốt': 'bg-green-50 text-green-600 border-green-100', 'Đang sửa': 'bg-orange-50 text-orange-600 border-orange-100', 'Hỏng': 'bg-red-50 text-red-600 border-red-100', 'Thanh lý': 'bg-slate-50 text-slate-400' }[a.status] || 'bg-slate-50 text-slate-400';
                 return `<tr class="hover:bg-slate-50 transition-all border-b border-slate-50">
-                    <td class="px-6 py-5 text-xs text-slate-400 font-bold">${i+1}</td>
-                    <td class="px-6 py-5"><span class="font-mono font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl text-sm border border-blue-100">${a.code}</span></td>
-                    <td class="px-6 py-5"><div class="font-bold text-slate-800 text-sm">${a.user}</div><div class="text-[10px] font-black text-slate-300 uppercase">${a.dept}</div></td>
+                    <td class="px-6 py-5 text-xs text-slate-400 font-black">${i+1}</td>
+                    <td class="px-6 py-5"><span class="font-mono font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl text-sm border border-blue-100 shadow-sm">${a.code}</span></td>
+                    <td class="px-6 py-5"><div class="font-black text-slate-800 text-sm tracking-tighter">${a.user}</div><div class="text-[9px] font-black text-slate-300 uppercase tracking-widest">${a.dept}</div></td>
                     <td class="px-6 py-5 text-center"><span class="text-[9px] font-black uppercase px-3 py-1 rounded-full border ${colors}">${a.status}</span></td>
                     <td class="px-6 py-5 bg-blue-50/20 border-l border-blue-50 text-center">
                         <div class="flex items-center justify-center space-x-2">
-                            <button onclick="showQr('${a.id}')" class="bg-white p-3 rounded-2xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            <button onclick="showQr('${a.id}')" class="bg-white p-2.5 rounded-xl border border-indigo-100 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="eye" class="w-4 h-4"></i></button>
                             ${isLoggedIn ? `
-                                <button onclick="openModal('${a.id}')" class="bg-white p-3 rounded-2xl border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteAsset('${a.id}')" class="bg-white p-3 rounded-2xl border border-red-100 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <button onclick="openModal('${a.id}')" class="bg-white p-2.5 rounded-xl border border-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deleteAsset('${a.id}')" class="bg-white p-2.5 rounded-xl border border-red-100 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                             ` : ''}
                         </div>
                     </td>
@@ -665,21 +717,22 @@
             const repair = assets.filter(a => a.status === 'Đang sửa');
             if (repair.length === 0) { if(empty) empty.classList.remove('hidden'); if(list) list.innerHTML = ""; return; }
             if(empty) empty.classList.add('hidden');
-            if(list) list.innerHTML = repair.map(a => `<div class="bg-white rounded-[32px] shadow-sm border border-orange-100 overflow-hidden flex flex-col transition-all hover:shadow-xl animate-in zoom-in-95 duration-500"><div class="p-6 border-b border-orange-50 bg-orange-50/30"><span class="text-[10px] font-black text-orange-600 bg-white px-3 py-1 rounded-lg border border-orange-200">${a.code}</span><h4 class="font-black text-slate-800 mt-3 text-lg tracking-tight">${a.user}</h4><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><div class="p-6 flex-1 bg-slate-50/30"><p class="text-xs text-slate-700 font-semibold italic">"${a.maintenanceLogs && a.maintenanceLogs.length > 0 ? a.maintenanceLogs[0].content : "Chờ xử lý..."}"</p></div><div class="p-4 bg-slate-50 grid grid-cols-2 gap-3"><button onclick="openModal('${a.id}')" class="bg-white border-2 border-slate-100 py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-slate-600">Chi tiết</button><button onclick="completeMaintenance('${a.id}')" class="bg-orange-500 text-white py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg">Xong</button></div></div>`).join('');
+            if(list) list.innerHTML = repair.map(a => `<div class="bg-white rounded-[32px] shadow-sm border border-orange-100 overflow-hidden flex flex-col transition-all hover:shadow-xl"><div class="p-6 border-b border-orange-50 bg-orange-50/30"><span class="text-[10px] font-black text-orange-600 bg-white px-2 py-0.5 rounded border border-orange-200 uppercase">${a.code}</span><h4 class="font-black text-slate-800 mt-3 text-lg">${a.user}</h4><p class="text-[10px] text-slate-500 font-bold uppercase">${a.dept}</p></div><div class="p-6 flex-1 bg-slate-50/30"><p class="text-xs text-slate-700 font-semibold italic">"${a.maintenanceLogs && a.maintenanceLogs.length > 0 ? a.maintenanceLogs[0].content : "Đang kiểm tra..."}"</p></div><div class="p-4 bg-slate-50 grid grid-cols-2 gap-3"><button onclick="openModal('${a.id}')" class="bg-white border-2 border-slate-100 py-3 rounded-[20px] text-[10px] font-black uppercase text-slate-600">Ghi chú</button><button onclick="completeMaintenance('${a.id}')" class="bg-orange-500 text-white py-3 rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 transition-all">Hoàn thành</button></div></div>`).join('');
             refreshIcons();
         }
 
         function renderDashboard() {
             const stats = { total: assets.length, good: assets.filter(a => a.status === 'Tốt').length, warn: assets.filter(a => a.status === 'Đang sửa').length, dead: assets.filter(a => a.status === 'Hỏng' || a.status === 'Thanh lý').length };
-            const ids = ['stat-total', 'stat-good', 'stat-warning', 'stat-liquidated'];
-            const vals = [stats.total, stats.good, stats.warn, stats.dead];
-            ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.textContent = vals[i]; });
+            ['stat-total', 'stat-good', 'stat-warning', 'stat-liquidated'].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if(el) el.textContent = [stats.total, stats.good, stats.warn, stats.dead][i];
+            });
 
             const summary = document.getElementById('dept-summary');
             if(summary) {
                 summary.innerHTML = Object.entries(DEPT_GROUPS).map(([group, groupDepts]) => {
                     const groupAssets = assets.filter(a => groupDepts.includes(a.dept));
-                    return `<div class="mb-4"><div class="flex items-center mb-4"><span class="bg-blue-600 w-1 h-4 rounded-full mr-2"></span><h5 class="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">${group} (${groupAssets.length})</h5></div><div class="space-y-4 pl-3">` + 
+                    return `<div class="mb-6"><div class="flex items-center mb-4"><span class="bg-blue-600 w-1.5 h-4 rounded-full mr-2"></span><h5 class="text-[11px] font-black text-slate-400 tracking-[0.2em] uppercase">${group} (${groupAssets.length})</h5></div><div class="space-y-5 pl-3">` + 
                         groupDepts.map(d => {
                             const count = assets.filter(a => a.dept === d).length;
                             const perc = stats.total > 0 ? (count / stats.total * 100) : 0;
@@ -694,7 +747,7 @@
                 loc.innerHTML = ['Khu A', 'Khu B', 'Khu C', 'Khu D'].map(l => {
                     const c = assets.filter(a => a.location === l).length;
                     const p = stats.total > 0 ? (c / stats.total * 100) : 0;
-                    return `<div class="bg-slate-50 p-5 rounded-[24px] border border-slate-100 mb-3 shadow-inner"><div class="flex justify-between items-center text-xs mb-2 font-black uppercase tracking-widest"><span>${l}</span><span class="text-purple-600">${c} máy</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-600 h-full transition-all duration-700" style="width: ${p}%"></div></div></div>`;
+                    return `<div class="bg-slate-50 p-5 rounded-[28px] border border-slate-100 mb-3 shadow-inner"><div class="flex justify-between items-center text-xs mb-2 font-black uppercase tracking-widest"><span>${l}</span><span class="text-purple-600">${c} MÁY</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-purple-600 h-full transition-all duration-700" style="width: ${p}%"></div></div></div>`;
                 }).join('');
             }
         }
@@ -707,13 +760,13 @@
 
         window.printAllQRs = () => {
             const grid = document.getElementById('qr-print-grid');
-            grid.innerHTML = assets.map((a, i) => `<div class="qr-print-item bg-white p-4 border"><div class="text-[10px] font-black uppercase mb-1">${a.user || ""}</div><div class="text-[8px] font-mono text-blue-600 mb-2">${a.code || ""}</div><div id="pqr-${i}" class="flex justify-center"></div><div class="text-[7px] text-slate-400 mt-2 uppercase font-bold">${a.dept || ""}</div></div>`).join('');
+            grid.innerHTML = assets.map((a, i) => `<div class="qr-print-item bg-white p-4 border"><div class="text-[10px] font-black uppercase mb-1">${a.user || ""}</div><div class="text-[8px] font-mono text-blue-600 mb-2">${a.code || ""}</div><div id="pqr-${i}" class="flex justify-center"></div><div class="text-[7px] text-slate-400 mt-2 uppercase font-bold tracking-widest">${a.dept || ""}</div></div>`).join('');
             assets.forEach((a, i) => new QRCode(document.getElementById(`pqr-${i}`), { text: getFullConfigText(a), width: 100, height: 100 }));
             setTimeout(() => window.print(), 500);
         };
 
-        const searchInp = document.getElementById('asset-search');
-        if(searchInp) searchInp.addEventListener('input', () => renderAssets());
+        const sInp = document.getElementById('asset-search');
+        if(sInp) sInp.addEventListener('input', () => renderAssets());
     </script>
 </body>
 </html>
